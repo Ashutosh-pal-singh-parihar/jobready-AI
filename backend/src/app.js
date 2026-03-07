@@ -1,11 +1,16 @@
 const express = require("express")
+const cookieParser = require("cookie-parser")
 
 const app = express()
 
+// middlewares
 app.use(express.json())
+app.use(cookieParser())
 
-app.get("/",(req, res)=>{
-    res.send("hello world")
-})
+// importing routes
+const authRoutes = require("./routes/auth.routes")
+
+// using routes
+app.use("/api/auth", authRoutes)
 
 module.exports = app
