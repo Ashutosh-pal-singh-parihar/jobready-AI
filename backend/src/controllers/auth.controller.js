@@ -92,9 +92,24 @@ const logoutUserController = async (req, res) => {
     })
 }
 
+// controller for getting all details of the user
+const getMeController = async (req, res)=>{
+    const user = await User.findById(req.user.id)
+
+    res.status(200).json({
+        message : "user details fetched successfully",
+        user : {
+            id : user._id,
+            username : user.username,
+            email : user.email,
+        }
+    })
+}
+
 
 module.exports = {
     registerUserController,
     loginUserController,
-    logoutUserController
+    logoutUserController,
+    getMeController
 }
