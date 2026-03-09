@@ -3,8 +3,9 @@ const {z} = require("zod")
 const { zodToJsonSchema } = require("zod-to-json-schema")
 
 const ai = new GoogleGenAI({
-    apiKey : process.env.GOOGLE_GENAI_API_KEY
+    apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
+
 
 const interviewReportSchema = z.object({
     matchScore: z.number().describe("A score between 0 and 100 indicating how well the candidate's profile matches the job describe"),
@@ -30,25 +31,68 @@ const interviewReportSchema = z.object({
     title: z.string().describe("The title of the job for which the interview report is generated"),
 })
 
-const generateInterviewReport = async ({resume,selfDescription,jobDescription}) => {
+async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
 
-    const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
+
+    const prompt = `
+Generate an interview preparation report.
+
+Use EXACTLY the following JSON structure:
+
+{
+  "matchScore": number (0-100),
+  "title": string,
+  "technicalQuestions": [
+    {
+      "question": string,
+      "intention": string,
+      "answer": string
+    }
+  ],
+  "behavioralQuestions": [
+    {
+      "question": string,
+      "intention": string,
+      "answer": string
+    }
+  ],
+  "skillGaps": [
+    {
+      "skill": string,
+      "severity": "low" | "medium" | "high"
+    }
+  ],
+  "preparationPlan": [
+    {
+      "day": number,
+      "focus": string,
+      "tasks": [string]
+    }
+  ]
+}
+
+Candidate Resume:
+${resume}
+
+Self Description:
+${selfDescription}
+
+Job Description:
+${jobDescription}
 `
 
     const response = await ai.models.generateContent({
-        model : "gemini-2.5-flash",
-        contents : prompt,
-        config : {
-            responseMimeType : "application/json",
-            responseSchema : zodToJsonSchema(interviewReportSchema)
+        model: "gemini-2.0-flash",
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: zodToJsonSchema(interviewReportSchema),
         }
     })
 
-    return JSON.parse(response)
-}
+    return JSON.parse(response.text)
 
+
+}
 
 module.exports = generateInterviewReport
